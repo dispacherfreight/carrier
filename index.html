@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dispacher Freight Carrier Signup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a highway guide sign is the hero; below it, a working load ticket (calculator) and a carrier setup sheet (form). */
+:root{
+  --bg:#eceee9; --panel:#ffffff; --ink:#15191d; --muted:#58616b; --line:#d3d7d0;
+  --sign:#0e6a3e; --sign-ink:#ffffff; --amber:#e9a50f; --amber-ink:#1d1606; --link:#0e6a3e;
+  --good:#0e6a3e; --bad:#b3361f;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Barlow","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111417; --panel:#1a1f24; --ink:#eef1f3; --muted:#9ba4ad; --line:#2b3238;
+    --sign:#127a48; --sign-ink:#ffffff; --amber:#f2b632; --amber-ink:#1d1606; --link:#5fd39a;
+    --good:#5fd39a; --bad:#f07a62; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111417; --panel:#1a1f24; --ink:#eef1f3; --muted:#9ba4ad; --line:#2b3238;
+  --sign:#127a48; --sign-ink:#ffffff; --amber:#f2b632; --amber-ink:#1d1606; --link:#5fd39a;
+  --good:#5fd39a; --bad:#f07a62; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
+a{color:var(--link)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.02;letter-spacing:.01em}
+h2{font-size:clamp(30px,4.2vw,44px);text-transform:uppercase;font-weight:800}
+h3{font-size:22px;font-weight:700;text-transform:uppercase}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.kicker{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* header */
+header{border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:800;font-size:24px;letter-spacing:.04em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.brand i{display:inline-block;width:14px;height:22px;background:var(--amber);transform:skewX(-14deg)}
+.bar-right{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.lang{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.lang button{font:600 13px var(--mono);background:transparent;color:var(--muted);border:0;padding:6px 10px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.phone{font-family:var(--mono);font-weight:500;text-decoration:none;color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center;padding:56px 0 48px}
+.hero h1{font-size:clamp(44px,7vw,84px);font-weight:800;text-transform:uppercase}
+.hero h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--amber) 62%,var(--amber) 92%,transparent 92%)}
+.lede{font-size:20px;max-width:34ch;margin:20px 0 28px;color:var(--ink)}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{font:700 18px var(--display);letter-spacing:.06em;text-transform:uppercase;padding:14px 22px;border-radius:6px;border:2px solid var(--ink);text-decoration:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--amber);color:var(--amber-ink);border-color:var(--amber)}
+.btn-primary:hover{filter:brightness(1.06)}
+.btn-ghost{background:transparent;color:var(--ink)}
+.btn-ghost:hover{background:var(--ink);color:var(--bg)}
+.terms{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-family:var(--mono);font-size:14px;color:var(--muted)}
+.terms span::before{content:"■ ";color:var(--amber)}
+
+/* guide sign */
+.sign-wrap{display:flex;flex-direction:column;align-items:stretch}
+.sign{background:var(--sign);color:var(--sign-ink);border-radius:14px;padding:10px;box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+.sign-inner{border:3px solid var(--sign-ink);border-radius:9px;padding:20px 22px 18px}
+.sign-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.shield{width:54px;height:58px;flex:none}
+.sign-label{font-family:var(--display);font-weight:600;font-size:18px;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.sign-dest{font-family:var(--display);font-weight:700;font-size:clamp(34px,4.6vw,50px);line-height:1;margin:14px 0 6px;text-transform:uppercase}
+.sign-row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;font-family:var(--display);font-size:22px;font-weight:600}
+.arrow{font-size:40px;line-height:1;display:inline-block;animation:nudge 2.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+@media (prefers-reduced-motion: reduce){.arrow{animation:none}}
+.ticket{background:var(--panel);border:1px solid var(--line);border-top:0;margin:0 18px;border-radius:0 0 10px 10px;padding:14px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ticket div{display:flex;flex-direction:column}
+.ticket b{font-family:var(--mono);font-weight:500;font-size:16px;font-variant-numeric:tabular-nums}
+.ticket small{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ticket .status{grid-column:1/-1;font-size:14px;color:var(--good);font-weight:600;border-top:1px dashed var(--line);padding-top:8px}
+.example-note{font-size:13px;color:var(--muted);margin:8px 18px 0}
+
+/* equipment strip */
+.equip{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel)}
+.equip ul{list-style:none;margin:0;padding:16px 0;display:flex;gap:10px 28px;flex-wrap:wrap;align-items:center}
+.equip li{font-family:var(--display);font-weight:600;font-size:19px;text-transform:uppercase;letter-spacing:.05em}
+.equip li.k{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--muted)}
+
+section.block{padding:64px 0}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.section-head p{max-width:46ch;margin:0;color:var(--muted)}
+
+/* what I do */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:3px solid var(--ink)}
+.step{padding:20px 20px 4px 0;border-right:1px solid var(--line)}
+.step + .step{padding-left:20px}
+.step:last-child{border-right:0}
+.step .n{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.step h3{margin:8px 0 8px}
+.step p{margin:0;color:var(--muted);font-size:16px}
+
+/* calculator */
+.calc{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.calc-in{padding:28px;display:grid;gap:22px;border-right:1px solid var(--line)}
+.field label{display:flex;justify-content:space-between;gap:10px;font-weight:600;margin-bottom:8px}
+.field label output{font-family:var(--mono);font-weight:500}
+.field input[type=range]{width:100%;accent-color:var(--sign)}
+.field .hint{font-size:14px;color:var(--muted);margin-top:4px}
+.money-in{display:flex;align-items:center;border:1px solid var(--line);border-radius:6px;background:var(--bg)}
+.money-in span{padding:0 10px;font-family:var(--mono);color:var(--muted)}
+.money-in input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 18px var(--mono);padding:10px 10px 10px 0}
+.calc-out{padding:28px;display:flex;flex-direction:column;gap:6px}
+.line{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:16px}
+.line b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+.line.fee b{color:var(--muted)}
+.total{margin-top:14px;padding:18px;border-radius:8px;background:var(--bg);border-left:6px solid var(--good)}
+.total.neg{border-left-color:var(--bad)}
+.total small{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.total strong{font-family:var(--display);font-size:46px;font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+.disclaimer{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* guarantee */
+.guarantee{background:var(--amber);color:var(--amber-ink)}
+.guarantee .wrap{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;padding-top:36px;padding-bottom:36px}
+.guarantee .big{font-family:var(--display);font-weight:800;font-size:clamp(60px,9vw,110px);line-height:.9}
+.guarantee h2{color:var(--amber-ink)}
+.guarantee p{margin:8px 0 0;max-width:60ch;font-size:18px}
+
+/* form */
+.formgrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:start}
+.contact-card{border-top:3px solid var(--ink);padding-top:18px}
+.contact-card p{margin:0 0 14px}
+.contact-card .mono{font-size:18px}
+form.sheet{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;display:grid;grid-template-columns:1fr 1fr;gap:16px 18px}
+.f{display:flex;flex-direction:column;gap:6px}
+.f.full{grid-column:1/-1}
+.f label{font-weight:600;font-size:15px}
+.f label .opt{font-weight:400;color:var(--muted)}
+.f input,.f select,.f textarea{font:400 16px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+.f textarea{min-height:84px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--sign);outline-offset:0;border-color:transparent}
+.err{color:var(--bad);font-size:14px;grid-column:1/-1;min-height:0;margin:0}
+.sheet .btn{justify-self:start}
+.result{grid-column:1/-1;border:2px solid var(--sign);border-radius:10px;padding:18px;background:var(--bg)}
+.result[hidden]{display:none}
+.result h3{margin-bottom:6px}
+.result pre{white-space:pre-wrap;font:400 14px var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin:12px 0;max-height:220px;overflow:auto}
+.send-row{display:flex;gap:10px;flex-wrap:wrap}
+.send-row .btn{font-size:16px;padding:10px 16px}
+.small{font-size:14px;color:var(--muted)}
+
+/* faq */
+.faq{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.faq h3{font-size:20px;margin-bottom:8px}
+.faq p{margin:0;color:var(--muted)}
+
+footer{border-top:1px solid var(--line);padding:28px 0 40px;font-size:15px;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+@media (max-width: 860px){
+  .hero,.calc,.formgrid,.guarantee .wrap{grid-template-columns:1fr}
+  .calc-in{border-right:0;border-bottom:1px solid var(--line)}
+  .steps{grid-template-columns:1fr 1fr}
+  .step,.step + .step{padding:18px 16px 16px 0;border-right:0;border-bottom:1px solid var(--line)}
+  .faq{grid-template-columns:1fr}
+  .hero{padding-top:36px;gap:32px}
+}
+@media (max-width: 520px){
+  form.sheet{grid-template-columns:1fr;padding:18px}
+  .steps{grid-template-columns:1fr}
+  .ticket{grid-template-columns:1fr 1fr}
+  .bar-right .phone{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand"><i aria-hidden="true"></i>Dispacher Freight</div>
+    <div class="bar-right">
+      <a class="phone" href="tel:+13238993701">(323) 899-3701</a>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" id="lang-en" aria-pressed="true">EN</button>
+        <button type="button" id="lang-es" aria-pressed="false">ES</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="wrap hero">
+    <div>
+      <p class="kicker" data-i18n="kicker">Truck dispatch for owner-operators &amp; small fleets</p>
+      <h1 data-i18n-html="h1">Your next load, <em>booked</em> before you deliver.</h1>
+      <p class="lede" data-i18n="lede">I find, negotiate and book your freight so your truck keeps rolling while you drive. Fewer empty days, better rates, zero time on the load boards.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="#signup" data-i18n="cta1">Get my next load</a>
+        <a class="btn btn-ghost" href="https://wa.me/13238993701" data-i18n="cta2">WhatsApp Carlos</a>
+      </div>
+      <div class="terms">
+        <span data-i18n="t1">No contract</span>
+        <span data-i18n="t2">8% per load</span>
+        <span data-i18n="t3">You approve every load</span>
+      </div>
+    </div>
+
+    <div class="sign-wrap" aria-label="Example of a booked load">
+      <div class="sign">
+        <div class="sign-inner">
+          <div class="sign-top">
+            <span class="sign-label" data-i18n="signlabel">Next load · Booked</span>
+            <svg class="shield" viewBox="0 0 54 58" aria-hidden="true">
+              <path d="M4 6 Q27 0 50 6 Q54 34 27 56 Q0 34 4 6Z" fill="#1d4fa0" stroke="#fff" stroke-width="2.5"/>
+              <path d="M4 6 Q27 0 50 6 L51 17 L3 17Z" fill="#b3261e"/>
+              <text x="27" y="42" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-weight="700" font-size="22" fill="#fff">10</text>
+            </svg>
+          </div>
+          <div class="sign-dest">Phoenix, AZ</div>
+          <div class="sign-row"><span>372 <span data-i18n="miles">miles</span></span><span class="arrow" aria-hidden="true">→</span></div>
+        </div>
+      </div>
+      <div class="ticket">
+        <div><small data-i18n="tk1">Pickup</small><b>Ontario, CA</b></div>
+        <div><small data-i18n="tk2">Equip.</small><b>Dry van 53'</b></div>
+        <div><small data-i18n="tk3">Rate</small><b>$1,450</b></div>
+        <div><small data-i18n="tk4">Per mile</small><b>$3.90</b></div>
+        <div class="status" data-i18n="tkstatus">✓ Rate con signed while you were still unloading</div>
+      </div>
+      <p class="example-note" data-i18n="exnote">Example load for illustration. Real rates depend on lane, equipment and market.</p>
+    </div>
+  </section>
+
+  <div class="equip">
+    <ul class="wrap">
+      <li class="k" data-i18n="equipk">Equipment I dispatch</li>
+      <li>Cargo van</li><li>Box truck</li><li>Dry van</li><li>Reefer</li><li>Flatbed</li><li>Step deck</li><li>Power only</li>
+    </ul>
+  </div>
+
+  <section class="wrap block">
+    <div class="section-head">
+      <h2 data-i18n="how">What I do for your truck</h2>
+      <p data-i18n="howp">You drive. I handle everything between the last delivery and the next pickup.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3 data-i18n="s1h">Find the freight</h3><p data-i18n="s1p">I search boards and broker contacts for loads that match your lanes, equipment and minimum rate.</p></div>
+      <div class="step"><span class="n">02</span><h3 data-i18n="s2h">Negotiate the rate</h3><p data-i18n="s2p">I push past the first offer and the board average. You get the number before anything is booked.</p></div>
+      <div class="step"><span class="n">03</span><h3 data-i18n="s3h">Handle the paperwork</h3><p data-i18n="s3p">Broker setup packets, rate confirmations and BOL follow-up, so you're not filling forms at the truck stop.</p></div>
+      <div class="step"><span class="n">04</span><h3 data-i18n="s4h">Plan the next one</h3><p data-i18n="s4p">While you're loaded, I'm already lining up the reload near your delivery to cut deadhead.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="calculator" style="padding-top:0">
+    <div class="section-head">
+      <h2 data-i18n="calch">Does 8% pay for itself?</h2>
+      <p data-i18n="calcp">Run your own numbers. Move the sliders to match your truck.</p>
+    </div>
+    <div class="calc">
+      <div class="calc-in">
+        <div class="field">
+          <label for="gross"><span data-i18n="c_gross">Your weekly gross today</span></label>
+          <div class="money-in"><span>$</span><input id="gross" type="number" inputmode="numeric" min="0" step="100" value="5000"></div>
+        </div>
+        <div class="field">
+          <label for="empty"><span data-i18n="c_empty">Days your truck sits empty per month</span><output id="emptyOut" class="mono">4</output></label>
+          <input id="empty" type="range" min="0" max="12" step="1" value="4">
+        </div>
+        <div class="field">
+          <label for="recover"><span data-i18n="c_rec">Empty days I fill for you</span><output id="recoverOut" class="mono">2</output></label>
+          <input id="recover" type="range" min="0" max="4" step="1" value="2">
+        </div>
+        <div class="field">
+          <label for="lift"><span data-i18n="c_lift">Better rate per load</span><output id="liftOut" class="mono">5%</output></label>
+          <input id="lift" type="range" min="0" max="15" step="1" value="5">
+          <div class="hint" data-i18n="c_lifthint">How much higher the negotiated rate is than what you take today.</div>
+        </div>
+      </div>
+      <div class="calc-out" aria-live="polite">
+        <span class="kicker" data-i18n="c_month">Per month</span>
+        <div class="line"><span data-i18n="c_now">Your gross today</span><b id="oNow">$0</b></div>
+        <div class="line"><span data-i18n="c_with">Gross with dispatch</span><b id="oWith">$0</b></div>
+        <div class="line fee"><span data-i18n="c_fee">My 8% fee</span><b id="oFee">$0</b></div>
+        <div class="line"><span data-i18n="c_keep">What you keep</span><b id="oKeep">$0</b></div>
+        <div class="total" id="totalBox">
+          <small data-i18n="c_diff">Difference vs. today</small>
+          <strong id="oDiff">$0</strong>
+        </div>
+        <p class="disclaimer" data-i18n="c_disc">Estimate only, based on 4.33 weeks per month and 5 working days per week. Real results depend on lanes, equipment and the market.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="guarantee">
+    <div class="wrap">
+      <div class="big">$0</div>
+      <div>
+        <h2 data-i18n="gh">A risk-free first week</h2>
+        <p data-i18n="gp">If in your first week I don't beat your current average rate per mile, you pay no commission. No contract after that either. Stay because it works.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap block" id="signup">
+    <div class="formgrid">
+      <div class="contact-card">
+        <h2 data-i18n="fh">Get your truck set up</h2>
+        <p style="margin-top:14px" data-i18n="fp">Fill this out in two minutes. Your details go straight to me on WhatsApp, text or email, and I'll call you back the same day.</p>
+        <p><span class="kicker" data-i18n="callme">Call or text</span><br><a class="mono" href="tel:+13238993701">(323) 899-3701</a></p>
+        <p><span class="kicker">Email</span><br><a class="mono" style="font-size:15px" href="mailto:carlos.bernal.la.23@gmail.com">carlos.bernal.la.23@gmail.com</a></p>
+        <p><span class="kicker" data-i18n="card">Business card</span><br><a href="https://dispacher.us/">dispacher.us</a></p>
+        <p class="small">Carlos Bernal · Transportation Manager</p>
+      </div>
+
+      <form class="sheet" id="sheet" novalidate>
+        <div class="f"><label for="fname" data-i18n="l_name">Your name</label><input id="fname" autocomplete="name" required></div>
+        <div class="f"><label for="fco" data-i18n="l_co">Company name</label><input id="fco" autocomplete="organization" required></div>
+        <div class="f"><label for="fmc"><span data-i18n="l_mc">MC or DOT number</span></label><input id="fmc" inputmode="numeric" required></div>
+        <div class="f"><label for="fphone" data-i18n="l_phone">Cell phone</label><input id="fphone" type="tel" autocomplete="tel" required></div>
+        <div class="f"><label for="femail"><span>Email</span> <span class="opt" data-i18n="opt">(optional)</span></label><input id="femail" type="email" autocomplete="email"></div>
+        <div class="f"><label for="fequip" data-i18n="l_equip">Equipment</label>
+          <select id="fequip" required>
+            <option value="" data-i18n="choose">Choose one</option>
+            <option>Cargo van</option><option>Box truck</option><option>Dry van</option><option>Reefer</option><option>Flatbed</option><option>Step deck</option><option>Power only</option>
+          </select>
+        </div>
+        <div class="f"><label for="ftrucks" data-i18n="l_trucks">Number of trucks</label><input id="ftrucks" type="number" min="1" value="1"></div>
+        <div class="f"><label for="fbase" data-i18n="l_base">Home base (city, state)</label><input id="fbase" placeholder="Los Angeles, CA"></div>
+        <div class="f"><label for="flanes" data-i18n="l_lanes">Preferred lanes or states</label><input id="flanes" placeholder="CA, AZ, NV, TX"></div>
+        <div class="f"><label for="fmin" data-i18n="l_min">Minimum rate per mile</label><input id="fmin" placeholder="$2.50"></div>
+        <div class="f full"><label for="fnow" data-i18n="l_now">How do you find loads today?</label>
+          <select id="fnow">
+            <option value="" data-i18n="choose">Choose one</option>
+            <option data-i18n="o1">I search load boards myself</option>
+            <option data-i18n="o2">I have another dispatcher</option>
+            <option data-i18n="o3">Direct customers or brokers</option>
+            <option data-i18n="o4">I'm a new authority, just starting</option>
+          </select>
+        </div>
+        <div class="f full"><label for="fnotes"><span data-i18n="l_notes">Anything else I should know?</span> <span class="opt" data-i18n="opt">(optional)</span></label><textarea id="fnotes"></textarea></div>
+        <p class="err" id="err" role="alert"></p>
+        <button class="btn btn-primary" type="submit" data-i18n="submit">Prepare my request</button>
+
+        <div class="result" id="result" hidden>
+          <h3 data-i18n="r_h">Almost done: send it to Carlos</h3>
+          <p class="small" data-i18n="r_p">Pick how you want to send it. Your app opens with the message ready; tap send there.</p>
+          <pre id="msg"></pre>
+          <div class="send-row">
+            <a class="btn btn-primary" id="sWa" href="#">WhatsApp</a>
+            <a class="btn btn-ghost" id="sSms" href="#" data-i18n="r_sms">Text message</a>
+            <a class="btn btn-ghost" id="sMail" href="#">Email</a>
+            <button class="btn btn-ghost" type="button" id="sCopy" data-i18n="r_copy">Copy message</button>
+          </div>
+          <p class="small" id="copyNote" style="margin-bottom:0"><span data-i18n="r_fallback">If a button doesn't open, copy the message and send it to</span> <span class="mono">(323) 899-3701</span> · <span class="mono">carlos.bernal.la.23@gmail.com</span></p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="wrap block" style="padding-top:0">
+    <div class="faq">
+      <div><h3 data-i18n="q1">Do I have to sign a long contract?</h3><p data-i18n="a1">No. We work load by load. If it stops making you money, you can stop anytime.</p></div>
+      <div><h3 data-i18n="q2">Who decides which loads I take?</h3><p data-i18n="a2">You do. I bring you the load and the rate, and nothing is booked without your OK.</p></div>
+      <div><h3 data-i18n="q3">What does it cost?</h3><p data-i18n="a3">A flat 8% of each load I book for you. No setup fee, no weekly minimum.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Dispacher Freight · <a href="https://dispachertrucking.com/">dispachertrucking.com</a></span>
+    <span class="mono">(323) 899-3701</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var ES = {
+    kicker:"Dispatch de camiones para owner-operators y flotas pequeñas",
+    h1:"Tu próxima carga, <em>reservada</em> antes de entregar.",
+    lede:"Yo busco, negocio y reservo tus cargas para que tu camión no pare mientras manejas. Menos días vacíos, mejores tarifas y cero tiempo en los load boards.",
+    cta1:"Quiero mi próxima carga", cta2:"WhatsApp a Carlos",
+    t1:"Sin contrato", t2:"8% por carga", t3:"Tú apruebas cada carga",
+    signlabel:"Próxima carga · Reservada", miles:"millas",
+    tk1:"Recogida", tk2:"Equipo", tk3:"Tarifa", tk4:"Por milla",
+    tkstatus:"✓ Rate con firmado mientras todavía descargabas",
+    exnote:"Carga de ejemplo. Las tarifas reales dependen de la ruta, el equipo y el mercado.",
+    equipk:"Equipos que despacho",
+    how:"Lo que hago por tu camión", howp:"Tú manejas. Yo me encargo de todo entre la última entrega y la siguiente recogida.",
+    s1h:"Busco la carga", s1p:"Busco en load boards y con mis brokers cargas que encajen con tus rutas, tu equipo y tu tarifa mínima.",
+    s2h:"Negocio la tarifa", s2p:"No acepto la primera oferta ni el promedio. Tú ves el número antes de que se reserve nada.",
+    s3h:"Hago el papeleo", s3p:"Paquetes de broker, rate confirmations y seguimiento de BOL, para que no llenes formularios en el truck stop.",
+    s4h:"Planeo la siguiente", s4p:"Mientras vas cargado, ya estoy buscando la recarga cerca de tu entrega para reducir millas vacías.",
+    calch:"¿El 8% se paga solo?", calcp:"Haz tus propios números. Mueve los controles según tu camión.",
+    c_gross:"Lo que facturas por semana hoy", c_empty:"Días al mes que tu camión está parado", c_rec:"Días vacíos que yo te lleno",
+    c_lift:"Mejor tarifa por carga", c_lifthint:"Cuánto más alta es la tarifa negociada que la que aceptas hoy.",
+    c_month:"Por mes", c_now:"Lo que facturas hoy", c_with:"Facturación con dispatch", c_fee:"Mi 8%", c_keep:"Lo que te queda",
+    c_diff:"Diferencia contra hoy",
+    c_disc:"Solo es un estimado, con 4.33 semanas por mes y 5 días de trabajo por semana. El resultado real depende de rutas, equipo y mercado.",
+    gh:"Primera semana sin riesgo", gp:"Si en tu primera semana no supero tu tarifa promedio por milla, no pagas comisión. Y después tampoco hay contrato. Te quedas porque funciona.",
+    fh:"Da de alta tu camión", fp:"Llénalo en dos minutos. Tus datos me llegan directo por WhatsApp, texto o correo, y te llamo el mismo día.",
+    callme:"Llama o escribe", card:"Tarjeta digital",
+    l_name:"Tu nombre", l_co:"Nombre de la empresa", l_mc:"Número MC o DOT", l_phone:"Celular", opt:"(opcional)",
+    l_equip:"Equipo", choose:"Elige uno", l_trucks:"Número de camiones", l_base:"Base (ciudad, estado)",
+    l_lanes:"Rutas o estados preferidos", l_min:"Tarifa mínima por milla", l_now:"¿Cómo consigues cargas hoy?",
+    o1:"Busco en load boards yo mismo", o2:"Tengo otro dispatcher", o3:"Clientes o brokers directos", o4:"Tengo autoridad nueva, voy empezando",
+    l_notes:"¿Algo más que deba saber?", submit:"Preparar mi solicitud",
+    r_h:"Casi listo: envíaselo a Carlos", r_p:"Elige cómo enviarlo. Tu app se abre con el mensaje listo; solo toca enviar.",
+    r_sms:"Mensaje de texto", r_copy:"Copiar mensaje", r_fallback:"Si un botón no abre, copia el mensaje y envíalo al",
+    q1:"¿Tengo que firmar un contrato largo?", a1:"No. Trabajamos carga por carga. Si deja de convenirte, puedes parar cuando quieras.",
+    q2:"¿Quién decide qué cargas tomo?", a2:"Tú. Yo te traigo la carga y la tarifa, y nada se reserva sin tu OK.",
+    q3:"¿Cuánto cuesta?", a3:"Un 8% fijo de cada carga que te reservo. Sin cuota de inicio ni mínimo semanal."
+  };
+  var EN = {};
+  document.querySelectorAll("[data-i18n]").forEach(function(el){ EN[el.getAttribute("data-i18n")] = EN[el.getAttribute("data-i18n")] || el.textContent; });
+  document.querySelectorAll("[data-i18n-html]").forEach(function(el){ EN[el.getAttribute("data-i18n-html")] = el.innerHTML; });
+  var lang = "en";
+  function setLang(l){
+    lang = l; var d = l === "es" ? ES : EN;
+    document.documentElement.lang = l;
+    document.querySelectorAll("[data-i18n]").forEach(function(el){ var k = el.getAttribute("data-i18n"); if (d[k]) el.textContent = d[k]; });
+    document.querySelectorAll("[data-i18n-html]").forEach(function(el){ var k = el.getAttribute("data-i18n-html"); if (d[k]) el.innerHTML = d[k]; });
+    document.getElementById("lang-en").setAttribute("aria-pressed", l === "en");
+    document.getElementById("lang-es").setAttribute("aria-pressed", l === "es");
+    calc();
+    try { localStorage.setItem("df-lang", l); } catch(e) {}
+  }
+  document.getElementById("lang-en").addEventListener("click", function(){ setLang("en"); });
+  document.getElementById("lang-es").addEventListener("click", function(){ setLang("es"); });
+
+  // calculator
+  var $ = function(id){ return document.getElementById(id); };
+  var fmt = function(n){ var s = Math.round(Math.abs(n)).toLocaleString("en-US"); return (n < 0 ? "−$" : "$") + s; };
+  function calc(){
+    var weekly = Math.max(0, parseFloat($("gross").value) || 0);
+    var empty = +$("empty").value;
+    $("recover").max = empty;
+    if (+$("recover").value > empty) $("recover").value = empty;
+    var rec = +$("recover").value, lift = +$("lift").value / 100;
+    $("emptyOut").textContent = empty; $("recoverOut").textContent = rec; $("liftOut").textContent = Math.round(lift*100) + "%";
+    var now = weekly * 4.33, daily = weekly / 5;
+    var withD = now * (1 + lift) + rec * daily * (1 + lift);
+    var fee = withD * 0.08, keep = withD - fee, diff = keep - now;
+    $("oNow").textContent = fmt(now); $("oWith").textContent = fmt(withD);
+    $("oFee").textContent = fmt(-fee); $("oKeep").textContent = fmt(keep);
+    $("oDiff").textContent = (diff >= 0 ? "+" : "") + fmt(diff);
+    $("totalBox").classList.toggle("neg", diff < 0);
+  }
+  ["gross","empty","recover","lift"].forEach(function(id){ $(id).addEventListener("input", calc); });
+
+  // form
+  var form = $("sheet");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    var need = ["fname","fco","fmc","fphone","fequip"];
+    var missing = need.filter(function(id){ return !$(id).value.trim(); });
+    need.forEach(function(id){ $(id).setAttribute("aria-invalid", missing.indexOf(id) > -1); });
+    if (missing.length){
+      $("err").textContent = lang === "es" ? "Completa nombre, empresa, MC/DOT, celular y equipo para continuar." : "Please fill in name, company, MC/DOT, cell phone and equipment to continue.";
+      $(missing[0]).focus(); return;
+    }
+    $("err").textContent = "";
+    var v = function(id){ return $(id).value.trim() || "-"; };
+    var lines = [
+      (lang === "es" ? "Hola Carlos, quiero dar de alta mi camión con Dispacher Freight." : "Hi Carlos, I'd like to set up my truck with Dispacher Freight."),
+      "",
+      "Name: " + v("fname"),
+      "Company: " + v("fco"),
+      "MC/DOT: " + v("fmc"),
+      "Phone: " + v("fphone"),
+      "Email: " + v("femail"),
+      "Equipment: " + v("fequip") + " x" + v("ftrucks"),
+      "Home base: " + v("fbase"),
+      "Lanes: " + v("flanes"),
+      "Min rate/mile: " + v("fmin"),
+      "Finding loads today: " + ($("fnow").value ? $("fnow").options[$("fnow").selectedIndex].text : "-"),
+      "Notes: " + v("fnotes")
+    ];
+    var msg = lines.join("\n");
+    $("msg").textContent = msg;
+    var enc = encodeURIComponent(msg);
+    var subj = encodeURIComponent("New carrier: " + v("fco") + " (" + v("fmc") + ")");
+    $("sWa").href = "https://wa.me/13238993701?text=" + enc;
+    $("sSms").href = "sms:+13238993701?&body=" + enc;
+    $("sMail").href = "mailto:carlos.bernal.la.23@gmail.com?subject=" + subj + "&body=" + enc;
+    $("result").hidden = false;
+    $("result").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"nearest"});
+  });
+  $("sCopy").addEventListener("click", function(){
+    var b = this;
+    try {
+      navigator.clipboard.writeText($("msg").textContent).then(function(){
+        b.textContent = lang === "es" ? "Copiado" : "Copied";
+      }, function(){ b.textContent = lang === "es" ? "Selecciona y copia el texto" : "Select and copy the text above"; });
+    } catch(e){ b.textContent = lang === "es" ? "Selecciona y copia el texto" : "Select and copy the text above"; }
+  });
+
+  var saved = "en";
+  try { saved = localStorage.getItem("df-lang") || "en"; } catch(e) {}
+  setLang(saved === "es" ? "es" : "en");
+})();
+</script>
+</body>
+</html>
