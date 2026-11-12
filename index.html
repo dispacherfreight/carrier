@@ -31,6 +31,7 @@
   --good:#5fd39a; --bad:#f07a62; color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55}
 a{color:var(--link)}
@@ -131,6 +132,12 @@ section.block{padding:64px 0}
 .guarantee .big{font-family:var(--display);font-weight:800;font-size:clamp(60px,9vw,110px);line-height:.9}
 .guarantee h2{color:var(--amber-ink)}
 .guarantee p{margin:8px 0 0;max-width:60ch;font-size:18px}
+.timer{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:16px 0 14px}
+.timer-label{font-family:var(--mono);font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.timer-clock{font-family:var(--mono);font-weight:500;font-size:clamp(34px,5vw,48px);font-variant-numeric:tabular-nums;background:var(--amber-ink);color:var(--amber);padding:4px 14px;border-radius:6px;line-height:1.1}
+.timer-done{font-weight:600}
+.btn-dark{background:var(--amber-ink);color:var(--amber);border-color:var(--amber-ink);margin-top:4px}
+.btn-dark:hover{filter:brightness(1.2)}
 
 /* form */
 .formgrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:40px;align-items:start}
@@ -296,12 +303,18 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     </div>
   </section>
 
-  <section class="guarantee">
+  <section class="guarantee" id="offer">
     <div class="wrap">
-      <div class="big">$0</div>
+      <div class="big">50%</div>
       <div>
-        <h2 data-i18n="gh">A risk-free first week</h2>
-        <p data-i18n="gp">If in your first week I don't beat your current average rate per mile, you pay no commission. No contract after that either. Stay because it works.</p>
+        <h2 data-i18n="gh">Half-price first week</h2>
+        <p data-i18n="gp">Sign up within 12 hours of your first visit to this page and your first week's commission is 4% instead of 8%. No contract after that either.</p>
+        <div class="timer" id="timerBox" aria-live="polite">
+          <span class="timer-label" data-i18n="t_left">Your offer ends in</span>
+          <span class="timer-clock mono" id="timerClock">12:00:00</span>
+        </div>
+        <p class="timer-done" id="timerDone" hidden data-i18n="t_done">Your 12-hour offer has ended. Standard rate: flat 8% per load, no contract.</p>
+        <a class="btn btn-dark" href="#signup" id="offerCta" data-i18n="t_cta">Claim my 50% first week</a>
       </div>
     </div>
   </section>
@@ -402,7 +415,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     c_month:"Por mes", c_now:"Lo que facturas hoy", c_with:"Facturación con dispatch", c_fee:"Mi 8%", c_keep:"Lo que te queda",
     c_diff:"Diferencia contra hoy",
     c_disc:"Solo es un estimado, con 4.33 semanas por mes y 5 días de trabajo por semana. El resultado real depende de rutas, equipo y mercado.",
-    gh:"Primera semana sin riesgo", gp:"Si en tu primera semana no supero tu tarifa promedio por milla, no pagas comisión. Y después tampoco hay contrato. Te quedas porque funciona.",
+    gh:"Primera semana a mitad de precio", gp:"Date de alta dentro de las 12 horas siguientes a tu primera visita a esta página y tu comisión de la primera semana es 4% en lugar de 8%. Y después tampoco hay contrato.",
+    t_left:"Tu oferta termina en", t_done:"Tu oferta de 12 horas terminó. Tarifa normal: 8% fijo por carga, sin contrato.", t_cta:"Quiero mi primera semana al 50%",
     fh:"Da de alta tu camión", fp:"Llénalo en dos minutos. Tus datos me llegan directo por WhatsApp, texto o correo, y te llamo el mismo día.",
     callme:"Llama o escribe", card:"Tarjeta digital",
     l_name:"Tu nombre", l_co:"Nombre de la empresa", l_mc:"Número MC o DOT", l_phone:"Celular", opt:"(opcional)",
@@ -481,6 +495,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       "Finding loads today: " + ($("fnow").value ? $("fnow").options[$("fnow").selectedIndex].text : "-"),
       "Notes: " + v("fnotes")
     ];
+    if (offerActive()) {
+      lines.push("", "Offer: 50% off first week (4% commission). Claimed before " + deadlineText() + ".");
+    }
     var msg = lines.join("\n");
     $("msg").textContent = msg;
     var enc = encodeURIComponent(msg);
@@ -499,6 +516,32 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
       }, function(){ b.textContent = lang === "es" ? "Selecciona y copia el texto" : "Select and copy the text above"; });
     } catch(e){ b.textContent = lang === "es" ? "Selecciona y copia el texto" : "Select and copy the text above"; }
   });
+
+  // 12-hour offer: the clock starts on this visitor's first visit and is kept in their browser,
+  // so every carrier gets the same real 12-hour window that ends when the clock hits zero.
+  var OFFER_MS = 12 * 60 * 60 * 1000, KEY = "df-offer-start", start = Date.now();
+  try {
+    var s = parseInt(localStorage.getItem(KEY), 10);
+    if (s && s <= Date.now()) start = s; else localStorage.setItem(KEY, String(start));
+  } catch(e) {}
+  var deadline = start + OFFER_MS;
+  function offerActive(){ return Date.now() < deadline; }
+  function deadlineText(){
+    try { return new Date(deadline).toLocaleString("en-US", {month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZone:"America/Los_Angeles", timeZoneName:"short"}); }
+    catch(e) { return new Date(deadline).toString(); }
+  }
+  function pad(n){ return (n < 10 ? "0" : "") + n; }
+  function tick(){
+    var left = deadline - Date.now();
+    if (left <= 0) {
+      $("timerBox").hidden = true; $("offerCta").hidden = true; $("timerDone").hidden = false;
+      return;
+    }
+    var t = Math.floor(left / 1000);
+    $("timerClock").textContent = pad(Math.floor(t / 3600)) + ":" + pad(Math.floor(t % 3600 / 60)) + ":" + pad(t % 60);
+    setTimeout(tick, 1000 - (Date.now() % 1000));
+  }
+  tick();
 
   var saved = "en";
   try { saved = localStorage.getItem("df-lang") || "en"; } catch(e) {}
